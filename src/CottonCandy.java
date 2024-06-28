@@ -22,12 +22,12 @@ public class CottonCandy {
     }
 
     public void makeCottonCandy(Connection conn, DbFunctions db) {
-        // Insert colors into the color table
+        // Insert colors into the color table from the colors list
         for (String color : colors) {
             db.insertColor(conn, color);
         }
 
-        // Insert shapes into the shape table
+        // Insert shapes into the shape table from the shapes list
         for (String shape : shapes) {
             db.insertShape(conn, shape);
         }
@@ -43,7 +43,7 @@ public class CottonCandy {
             }
             colorSelection = scanner.nextLine();
             if (!colors.contains(colorSelection)) {
-                System.out.println(colorSelection + " is not an appropriate color, please try again!");
+                System.out.println("Unfortunately" + colorSelection + " is not an option, please try again!");
             }
         }
 
@@ -55,7 +55,7 @@ public class CottonCandy {
             }
             shapeSelection = scanner.nextLine();
             if (!shapes.contains(shapeSelection)) {
-                System.out.println(shapeSelection + " is not an option, try again!");
+                System.out.println("Unfortunately " + shapeSelection + " is not an option, please try again!");
             }
         }
 
@@ -66,6 +66,7 @@ public class CottonCandy {
 
 
 //cotton candy machine with shapes and colors
+//Flavors maybe coming later....?
 //Pink-Strawberry
 //Blue-Vanilla
 //Yellow-Banana
