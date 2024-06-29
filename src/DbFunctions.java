@@ -144,13 +144,7 @@ public void insertColor(Connection conn, String colorName) {
             ResultSet colorResult = statement.executeQuery();
             colorResult.next();
             int colorId = colorResult.getInt("color_id");
-//            Integer colorId = null;
-//            Integer shapeId = null;
-
-//            colorResult.next();
-//            if (colorResult.next()) {
-//                colorId = colorResult.getInt("color_id");
-//            }else{System.out.print("Eh");}
+//
 
 
             // ------------Get shape_id
@@ -160,9 +154,7 @@ public void insertColor(Connection conn, String colorName) {
             ResultSet shapeResult = statement.executeQuery();
             shapeResult.next();
             int shapeId = shapeResult.getInt("shape_id");
-//            if (shapeResult.next()){
-//                shapeId = shapeResult.getInt("shape_id");
-//            }else{System.out.print("Eh");}
+//
 
             // ------------------Insert into cotton_candy table
             String insertCottonCandyQuery = "INSERT INTO cotton_candy (color, shape) VALUES (?, ?);";
@@ -199,23 +191,6 @@ public void insertColor(Connection conn, String colorName) {
         }
     }
 
-//    public void search_by_id(Connection conn, String table_name, int id) {
-//        Statement statement;
-//        ResultSet rs = null;
-//        try {
-//            String query = String.format("select * from %s where empid=%s", table_name, id);
-//            statement = conn.createStatement();
-//            rs = statement.executeQuery(query);
-//            while (rs.next()) {
-//                System.out.println(rs.getString("empid") + " ");
-//                System.out.println(rs.getString("name") + " ");
-//                System.out.println(rs.getString("address") + " ");
-//            }
-//
-//        } catch (Exception e) {
-//            System.out.println(e);
-//        }
-//    }
     public List<String> readAllCottonCandyColors(Connection conn){
         Statement statement;
         List<String> colors = new ArrayList<String>();
@@ -227,6 +202,7 @@ public void insertColor(Connection conn, String colorName) {
              rs = statement.executeQuery(query);
 
             while(rs.next()){
+                //looping through the colors and adding them to the colors list
                 colors.add(rs.getString("color_name").toLowerCase());
             }
 //            System.out.println(colors);
@@ -249,9 +225,10 @@ public void insertColor(Connection conn, String colorName) {
             rs = statement.executeQuery(query);
 
             while(rs.next()){
+                //looping through the shapes and adding them to the shapes list
                 shapes.add(rs.getString("shape_name").toLowerCase());
             }
-//            System.out.println(shapes);
+
 
         }
         catch (Exception e){
@@ -293,30 +270,42 @@ public void insertColor(Connection conn, String colorName) {
         }
     }
 
+    public String updateShapeCottonCandy(Connection conn, String originalShape, String shape){
+        PreparedStatement statement = null;
+        Statement stmt = null;
+        Integer newShapeId = null;
+        String rs4 = null;
 
-//    public void delete_row_by_id(Connection conn, String table_name, int id) {
-//        Statement statement;
-//        try {
-//            String query = String.format("delete from %s where empid=%s", table_name, id);
-//            statement = conn.createStatement();
-//            statement.executeUpdate(query);
-//            System.out.println("Data Deleted");
-//        } catch (Exception e) {
-//            System.out.println(e);
-//        }
-//    }
+        try{
+            String query = String.format("SELECT * FROM shape WHERE shape_name ILIKE '%s'", originalShape);
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
 
-//    public void delete_table(Connection conn, String table_name) {
-//        Statement statement;
-//        try {
-//            String query = String.format("drop table %s", table_name);
-//            statement = conn.createStatement();
-//            statement.executeUpdate(query);
-//            System.out.println("Table Deleted");
-//        } catch (Exception e) {
-//            System.out.println(e);
-//
-//        }
-//    }
+            String query2 = String.format("SELECT * FROM shape WHERE shape_name ILIKE '%s'", shape);
+            stmt = conn.createStatement();
+            ResultSet rs2 = stmt.executeQuery(query2);
 
+            while (rs.next() && rs2.next()){
+                int oldShapeId = rs.getInt("shape_id");
+                newShapeId = rs2.getInt("shape_id");
+                String query3 = "UPDATE cotton_candy SET shape = ? WHERE shape = ?";
+                statement = conn.prepareStatement(query3);
+                statement.setInt(1, newShapeId);
+                statement.setInt(2, oldShapeId);
+                statement.executeUpdate();
+            }
+            Statement rs3 = conn.createStatement();
+            ResultSet rsShape = rs3.executeQuery("SELECT * FROM shape WHERE shape_id = " + newShapeId);
+
+            if (rsShape.next()){
+                System.out.println("Updated shape to: " + shape);
+                return rsShape.getString("shape_name");
+            }
+
+        }
+        catch (Exception e){
+            System.out.println(e);
+        }
+    return rs4;
+    }
 }
