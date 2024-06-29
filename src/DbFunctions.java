@@ -2,6 +2,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.*;
 
 public class DbFunctions {
     public Connection connect_to_db(String dbname, String user, String pass) {
@@ -136,23 +138,34 @@ public void insertColor(Connection conn, String colorName) {
         PreparedStatement statement;
         try {
             // -----------Get color_id
-            String getColorIdQuery = "SELECT color_id FROM color WHERE color_name = ?;";
+            String getColorIdQuery = "SELECT * FROM color WHERE color_name ILIKE ?";
             statement = conn.prepareStatement(getColorIdQuery);
             statement.setString(1, colorName);
             ResultSet colorResult = statement.executeQuery();
             colorResult.next();
             int colorId = colorResult.getInt("color_id");
+//            Integer colorId = null;
+//            Integer shapeId = null;
+
+//            colorResult.next();
+//            if (colorResult.next()) {
+//                colorId = colorResult.getInt("color_id");
+//            }else{System.out.print("Eh");}
+
 
             // ------------Get shape_id
-            String getShapeIdQuery = "SELECT shape_id FROM shape WHERE shape_name = ?;";
+            String getShapeIdQuery = "SELECT * FROM shape WHERE shape_name ILIKE ?";
             statement = conn.prepareStatement(getShapeIdQuery);
             statement.setString(1, shapeName);
             ResultSet shapeResult = statement.executeQuery();
             shapeResult.next();
             int shapeId = shapeResult.getInt("shape_id");
+//            if (shapeResult.next()){
+//                shapeId = shapeResult.getInt("shape_id");
+//            }else{System.out.print("Eh");}
 
             // ------------------Insert into cotton_candy table
-            String insertCottonCandyQuery = "INSERT INTO cotton_candy (color_id, shape_id) VALUES (?, ?);";
+            String insertCottonCandyQuery = "INSERT INTO cotton_candy (color, shape) VALUES (?, ?);";
             statement = conn.prepareStatement(insertCottonCandyQuery);
             statement.setInt(1, colorId);
             statement.setInt(2, shapeId);
@@ -160,26 +173,31 @@ public void insertColor(Connection conn, String colorName) {
             System.out.println("Inserted cotton candy with color: " + colorName + " and shape: " + shapeName);
 
         } catch (Exception e) {
+            System.out.println("eh");
             System.out.println(e);
         }
     }
+//----------------Read Cotton Candy
+    public void read_CottonCandy(Connection conn) {
+        Statement statement;
+        ResultSet rs = null;
+        try {
+            String query = ("select * from cotton_candy");
+            statement = conn.createStatement();
+            rs = statement.executeQuery(query);
+            while (rs.next()) {
+                String color = rs.getString("color") + " ";
+                String shape = rs.getString("shape") + " ";
 
-//    public void read_data(Connection conn, String table_name) {
-//        Statement statement;
-//        ResultSet rs = null;
-//        try {
-//            String query = String.format("select * from %s", table_name);
-//            statement = conn.createStatement();
-//            rs = statement.executeQuery(query);
-//            while (rs.next()) {
-//                System.out.print(rs.getString("empid") + " ");
-//                System.out.print(rs.getString("name") + " ");
-//                System.out.print(rs.getString("Address") + " ");
-//            }
-//        } catch (Exception e) {
-//            System.out.println(e);
-//        }
-//    }
+                String colorFormatted = String.format("Color: %s", color);
+                String shapeFormatted = String.format("Shape: %s", shape);
+
+                System.out.println(colorFormatted + shapeFormatted);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
 
 //    public void search_by_id(Connection conn, String table_name, int id) {
 //        Statement statement;
@@ -198,18 +216,83 @@ public void insertColor(Connection conn, String colorName) {
 //            System.out.println(e);
 //        }
 //    }
+    public List<String> readAllCottonCandyColors(Connection conn){
+        Statement statement;
+        List<String> colors = new ArrayList<String>();
+        ResultSet rs = null;
 
-//    public void delete_row_by_name(Connection conn, String table_name, String name) {
-//        Statement statement;
-//        try {
-//            String query = String.format("delete from %s where name='%s'", table_name, name);
-//            statement = conn.createStatement();
-//            statement.executeUpdate(query);
-//            System.out.println("Data Deleted");
-//        } catch (Exception e) {
-//            System.out.println(e);
-//        }
-//    }
+        try{
+            String query = String.format("SELECT * FROM color");
+            statement = conn.createStatement();
+             rs = statement.executeQuery(query);
+
+            while(rs.next()){
+                colors.add(rs.getString("color_name").toLowerCase());
+            }
+//            System.out.println(colors);
+
+        }
+        catch (Exception e){
+            System.out.print(e);
+        }
+        return colors;
+    }
+
+    public List<String> readAllCottonCandyShapes(Connection conn){
+        Statement statement;
+        List<String> shapes = new ArrayList<String>();
+        ResultSet rs = null;
+
+        try{
+            String query = String.format("SELECT * FROM shape");
+            statement = conn.createStatement();
+            rs = statement.executeQuery(query);
+
+            while(rs.next()){
+                shapes.add(rs.getString("shape_name").toLowerCase());
+            }
+//            System.out.println(shapes);
+
+        }
+        catch (Exception e){
+            System.out.print(e);
+        }
+        return shapes;
+    }
+
+    public void deleteCottonCandy(Connection conn, String table_name, String shape, String color) {
+        PreparedStatement statement = null;
+        Statement statement2 = null;
+        Statement statement3 = null;
+        ResultSet rs = null;
+        ResultSet rs2 = null;
+
+        try {
+            String query2 = String.format("SELECT * FROM shape WHERE shape_name ILIKE '%s'", shape);
+            statement2 = conn.createStatement();
+            rs = statement2.executeQuery(query2);
+
+            String query3 = String.format("SELECT * FROM color WHERE color_name ILIKE '%s'", color);
+            statement3 = conn.createStatement();
+            rs2 = statement3.executeQuery(query3);
+
+            if (rs.next() && rs2.next()) {
+                int shapeId = rs.getInt("shape_id");
+                int colorId = rs2.getInt("color_id");
+
+                String query = String.format("DELETE FROM %s WHERE shape = ? AND color = ?", table_name);
+                statement = conn.prepareStatement(query);
+                statement.setInt(1, shapeId);
+                statement.setInt(2, colorId);
+                statement.executeUpdate();
+
+                System.out.println("I THREW IT ON THE GROUND!");
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
 
 //    public void delete_row_by_id(Connection conn, String table_name, int id) {
 //        Statement statement;
